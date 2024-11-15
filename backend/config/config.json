@@ -1,0 +1,29 @@
+{
+  "development": {
+    "username": "olga",
+    "password": "mila",
+    "database": "stockswiki_dev",
+    "host": "localhost",
+    "port": 5432,
+    "dialect": "postgres",
+    "logging": false
+  },
+  "staging": {
+    "username": "olga",
+    "password": "mila",
+    "database": "stockswiki_stg",
+    "host": "localhost",
+    "port": 5432,
+    "dialect": "postgres",
+    "logging": false
+  },
+  "production": {
+    "username": "olga",
+    "password": "mila",
+    "database": "stockswiki_prd",
+    "host": "localhost",
+    "port": 5432,
+    "dialect": "postgres",
+    "logging": false
+  }
+}

@@ -1,0 +1,16 @@
+/* src/components/NotesApp.css */
+.notes-app {
+  display: flex;
+  height: 100%;
+}
+
+.left-panel {
+  width: 250px;
+  background-color: #f9f9f9;
+  border-right: 1px solid #ddd;
+}
+
+.note-editor {
+  flex: 1;
+  padding: 20px;
+}

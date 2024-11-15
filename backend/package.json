@@ -1,0 +1,37 @@
+{
+  "name": "stockswiki-backend-node",
+  "version": "1.0.0",
+  "description": "Backend for StocksWiki Chat Application",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "sequelize": "sequelize",
+    "test": "mocha 'tests/**/*.test.mjs' --recursive --exit",
+    "test:watch": "mocha 'tests/**/*.test.js' --recursive --watch",
+    "test:coverage": "nyc mocha 'tests/**/*.test.js' --recursive --exit"
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.21.1",
+    "jsonwebtoken": "^8.5.1",
+    "openai": "^4.71.1",
+    "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.5"
+  },
+  "devDependencies": {
+    "chai": "^4.5.0",
+    "mocha": "^10.8.2",
+    "nodemon": "^2.0.22",
+    "nyc": "^15.1.0",
+    "sequelize-cli": "^6.6.2",
+    "supertest": "^6.3.4"
+  }
+}

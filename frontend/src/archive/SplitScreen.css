@@ -1,0 +1,21 @@
+/* src/components/SplitScreen.css */
+.split-screen {
+    display: flex;
+    height: 100%;
+}
+
+.left-pane {
+    background-color: #f0f0f0;
+    transition: width 0.2s;
+}
+
+.right-pane {
+    background-color: #ffffff;
+    transition: width 0.2s;
+}
+
+.divider {
+    width: 5px;
+    background-color: #ccc;
+    cursor: ew-resize;
+}

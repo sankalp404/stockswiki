@@ -1,0 +1,13 @@
+/* src/components/SplitPane.css */
+.split-pane {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.split-pane .divider {
+  cursor: col-resize;
+  width: 5px;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease;
+}

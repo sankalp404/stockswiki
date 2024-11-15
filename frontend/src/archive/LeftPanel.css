@@ -1,0 +1,24 @@
+/* src/components/LeftPanel.css */
+.left-panel {
+  padding: 10px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+.notes-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.notes-list li {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.notes-list li:hover {
+  background-color: #e0e0e0;
+}

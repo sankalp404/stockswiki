@@ -1,0 +1,49 @@
+{
+  "name": "stockswiki-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^5.16.7",
+    "@mui/material": "^5.16.7",
+    "@uiw/react-md-editor": "^4.0.4",
+    "axios": "^0.27.2",
+    "babel-loader": "^9.2.1",
+    "date-fns": "^4.1.0",
+    "highlight.js": "^11.10.0",
+    "html-webpack-plugin": "^5.6.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^9.0.1",
+    "react-quill": "^2.0.0",
+    "react-router-dom": "^6.2.1",
+    "react-scripts": "^5.0.1",
+    "react-split": "^2.0.14",
+    "showdown": "^2.1.0",
+    "web-vitals": "^2.1.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.14.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.2",
+    "globals": "^15.12.0"
+  }
+}

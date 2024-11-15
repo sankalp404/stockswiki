@@ -1,0 +1,19 @@
+/**
+ * This file is a configuration file for Sequelize CLI.
+ * It is used to configure the paths for the models, seeders, and migrations directories.
+ * The paths are relative to the project root directory.
+ * Place this file in the root directory of the project.
+ * Note: This file should remain in CommonJS format as it is used by the Sequelize CLI.
+ */
+
+const path = require('path');
+
+const configPath = path.resolve('config', 'config.cjs');
+console.log('Resolved config path:', configPath);
+
+module.exports = {
+  'config': configPath,
+  'models-path': path.resolve('models'),
+  'seeders-path': path.resolve('seeders'),
+  'migrations-path': path.resolve('migrations')
+};

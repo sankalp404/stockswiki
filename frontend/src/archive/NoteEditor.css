@@ -1,0 +1,52 @@
+/* src/components/NoteEditor.css */
+.ticker {
+  background-color: yellow;
+  border-radius: 3px;
+}
+
+.note-editor-container {
+  padding: 16px;
+  box-sizing: border-box;
+  height: 100%;
+}
+
+.note-editor-header {
+  border-bottom: 1px solid #444;
+  padding-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.note-title-input {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background-color: #2a2a2a;
+  color: #fff;
+}
+
+.note-title-input::placeholder {
+  color: #aaa;
+}
+
+.summary-box {
+  padding: 16px;
+  background-color: #2a2a2a;
+  border-radius: 4px;
+}
+
+.summary-display {
+  color: #ffffff;
+}
+
+.new-note-button,
+.save-button {
+  margin-left: 8px;
+}
+
+.MuiChip-root {
+  background-color: #3a3f51;
+  color: #fff;
+}
