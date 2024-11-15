@@ -5,18 +5,26 @@ const { Note, Ticker } = db;
 
 export async function createNote(req, res) {
   try {
-    const { content, summary, title, ticker_metadata, date, userId } = req.body;
-    const note = await Note.create({
+    const { content, summary, ticker_metadata, tagIds, title, userId } = req.body;
+
+    const newNote = await Note.create({
       content,
       summary,
-      title,
       ticker_metadata,
-      date,
+      title,
       userId,
     });
-    res.status(201).json(note);
+
+    // Associate tags
+    if (Array.isArray(tagIds)) {
+      const tags = await Tag.findAll({ where: { id: tagIds } });
+      await newNote.setTags(tags);
+    }
+
+    res.status(201).json({ message: 'Note created successfully.', note: newNote });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error('Error creating note:', error);
+    res.status(500).json({ error: 'Note creation failed.', details: error.message });
   }
 }
 
@@ -37,11 +45,11 @@ export async function getNotes(req, res) {
 export async function updateNote(req, res) {
   try {
     const { id } = req.params;
-    const { content, summary, ticker_metadata } = req.body;
+    const { content, summary, ticker_metadata, tagIds } = req.body;
     const userId = req.user.id; // Extracted from authenticated token
 
     // Find the note
-    const note = await Note.findOne({ where: { id, userId } });
+    const note = await Note.findOne({ where: { id, userId }, include: ['Tags'] });
     if (!note) {
       return res.status(404).json({ error: 'Note not found.' });
     }
@@ -53,7 +61,11 @@ export async function updateNote(req, res) {
       ticker_metadata: ticker_metadata || note.ticker_metadata,
     });
 
-    // Optionally, handle associations (tags, tickers) here
+    // Update tags associations
+    if (Array.isArray(tagIds)) {
+      const tags = await Tag.findAll({ where: { id: tagIds } });
+      await note.setTags(tags);
+    }
 
     res.json({ message: 'Note updated successfully.', note });
   } catch (error) {

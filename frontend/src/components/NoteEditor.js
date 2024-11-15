@@ -15,6 +15,7 @@ import {
   Button,
   IconButton,
   Chip,
+  Autocomplete,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import AddIcon from '@mui/icons-material/Add';
@@ -26,6 +27,7 @@ import PropTypes from 'prop-types';
 import noteService from '../services/noteService';
 import authService from '../services/authService';
 import axios from 'axios';
+import TagIcon from '@mui/icons-material/Tag';
 
 const TICKER_REGEX = /\b[A-Z0-9]{1,5}\b/g;
 
@@ -43,7 +45,22 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
     severity: 'success',
   });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [availableTags, setAvailableTags] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
   const editorRef = useRef(null);
+
+  useEffect(() => {
+    // Fetch available tags for autocomplete
+    const fetchTags = async () => {
+      try {
+        const tags = await noteService.getTags();
+        setAvailableTags(tags);
+      } catch (error) {
+        console.error('Error fetching tags:', error);
+      }
+    };
+    fetchTags();
+  }, []);
 
   useEffect(() => {
     if (selectedNote) {
@@ -62,6 +79,7 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
         };
       });
       setTickerPrices(prices);
+      setSelectedTags(selectedNote.tags ? selectedNote.tags.map(tag => tag.id) : []);
       setSummary(selectedNote.summary || '');
       setIsEditingTitle(false);
     } else {
@@ -69,6 +87,7 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
       setContent('');
       setTickers([]);
       setTickerPrices({});
+      setSelectedTags([]);
       setSummary('');
       setIsEditingTitle(true); // Enable title input for new notes
     }
@@ -104,7 +123,7 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
                       ? 'down'
                       : 'unchanged'
                   : 'unchanged',
-              currency: 'USD', 
+              currency: 'USD',
             };
           } catch (error) {
             console.error(`Error fetching price for ${ticker}:`, error);
@@ -150,6 +169,7 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
       // TODO: Integrate actual summary generation logic
     }
 
+    // Prepare ticker metadata
     const tickerMetadata = tickers.map(ticker => ({
       tickerSymbol: ticker,
       tickerPrice: tickerPrices[ticker]?.price || 'N/A',
@@ -157,6 +177,7 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
       currency: tickerPrices[ticker]?.currency || 'USD',
     }));
 
+    // Prepare note data with tag IDs
     const updatedNote = {
       id: selectedNote ? selectedNote.id : undefined,
       content,
@@ -164,6 +185,7 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
       title,
       ticker_metadata: tickerMetadata,
       userId: userId,
+      tagIds: selectedTags,
     };
 
     try {
@@ -191,6 +213,10 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
         severity: 'error',
       });
     }
+  };
+
+  const handleAddTag = (event, value) => {
+    setSelectedTags(value);
   };
 
   return (
@@ -233,19 +259,69 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
           </Tooltip>
         </Box>
       </Box>
+
+      {/* Tag Selector */}
+      <Box sx={{ paddingX: 2, paddingBottom: 2 }}>
+        <Autocomplete
+          multiple
+          id="tags-outlined"
+          options={availableTags.map((option) => option.name)}
+          getOptionLabel={(option) => option}
+          value={availableTags.filter(tag => selectedTags.includes(tag.id)).map(tag => tag.name)}
+          onChange={(event, newValue) => {
+            const selectedTagIds = newValue.map(tagName => {
+              const tag = availableTags.find(t => t.name === tagName);
+              return tag ? tag.id : null;
+            }).filter(id => id !== null);
+            setSelectedTags(selectedTagIds);
+          }}
+          filterSelectedOptions
+          freeSolo
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant="outlined"
+              label="Tags"
+              placeholder="Select or create tags"
+              InputProps={{
+                ...params.InputProps,
+                startAdornment: (
+                  <>
+                    <TagIcon sx={{ marginRight: 1, color: 'action.active' }} />
+                    {params.InputProps.startAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
+        />
+      </Box>
+
       {/* Markdown Editor */}
       <Box sx={{ flexGrow: 1, marginBottom: 1, paddingX: 2 }}>
         <MDEditor
           value={content}
           onChange={setContent}
           height={300}
-          preview='edit'
+          preview="edit"
           textareaProps={{
             placeholder: 'Write your note in Markdown...',
           }}
           visibleDragbar={false}
         />
       </Box>
+
+      {/* Display Tags Below Editor */}
+      {selectedNote && selectedTags.length > 0 && (
+        <Box sx={{ paddingX: 2, paddingBottom: 2 }}>
+          {availableTags
+            .filter(tag => selectedTags.includes(tag.id))
+            .map((tag) => (
+              <Chip key={tag.id} label={`#${tag.name}`} size="small" sx={{ marginRight: 0.5 }} />
+            ))}
+        </Box>
+      )}
+
       {/* Tickers Section */}
       {tickers.length > 0 && (
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', marginY: 2, paddingX: 2 }}>

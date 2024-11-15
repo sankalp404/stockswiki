@@ -31,6 +31,11 @@ app.get('/', (req, res) => {
     res.send('StocksWiki Backend is running.');
 });
 
+// Error Handling Middleware for Undefined Routes
+app.use((req, res, next) => {
+    res.status(404).json({ error: 'Route not found.' });
+  });
+
 // Start the server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
