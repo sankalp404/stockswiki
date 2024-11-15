@@ -104,7 +104,7 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
                       ? 'down'
                       : 'unchanged'
                   : 'unchanged',
-              currency: 'USD',
+              currency: 'USD', 
             };
           } catch (error) {
             console.error(`Error fetching price for ${ticker}:`, error);

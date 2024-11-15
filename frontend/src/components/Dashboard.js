@@ -69,7 +69,7 @@ function Dashboard() {
           <Header />
 
           {/* Chat Interface */}
-          <Box sx={{ flexGrow: 1, padding: 2, overflowY: 'auto', backgroundColor: '#121212' }}>
+          <Box sx={{ flexGrow: 1, padding: 2, overflowY: 'auto' }}>
             <ChatInterface messages={messages} onSend={handleSend} onClear={handleClear} />
           </Box>
 

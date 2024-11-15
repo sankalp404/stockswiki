@@ -123,7 +123,7 @@ function ListOfNotes({ notes, handleNoteSelect }) {
                       {note.ticker_metadata.map((ticker) => (
                         <Chip
                           key={ticker.tickerSymbol}
-                          label={`${ticker.tickerSymbol}: ${ticker.price || 'N/A'}`}
+                          label={`${ticker.tickerSymbol}: ${ticker.tickerPrice || 'N/A'}`}
                           size="small"
                           sx={{
                             fontSize: '0.7rem',
@@ -138,14 +138,14 @@ function ListOfNotes({ notes, handleNoteSelect }) {
                           <span
                             style={{
                               color:
-                                ticker.change === 'up'
+                                ticker.priceChange === 'up'
                                   ? 'green'
-                                  : ticker.change === 'down'
+                                  : ticker.priceChange === 'down'
                                     ? 'red'
                                     : 'black',
                             }}
                           >
-                            {ticker.price}
+                            {ticker.tickerPrice}
                           </span>
                         </Chip>
                       ))}
