@@ -1,6 +1,6 @@
-const { expect } = require('chai');
-const { sequelize, dataTypes, checkModelName, checkPropertyExists } = require('sequelize-test-helpers');
-const TickerModel = require('../../models/ticker');
+import { expect } from 'chai';
+import { sequelize, dataTypes, checkModelName, checkPropertyExists } from 'sequelize-test-helpers';
+import TickerModel from '../../models/ticker';
 
 describe('Ticker Model', () => {
   const Ticker = TickerModel(sequelize, dataTypes);

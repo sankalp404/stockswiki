@@ -14,10 +14,13 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Checkbox,
+  ListItemText,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { formatDistanceToNow } from 'date-fns';
-import noteService from '../services/noteService'; // Ensure getTags method exists
+import noteService from '../services/noteService'; 
+import TickerChip from './TickerChip';
 
 function getSnippet(content) {
   const lines = content.split('\n').slice(0, 2);
@@ -107,9 +110,16 @@ function ListOfNotes({ notes, handleNoteSelect }) {
             onChange={handleTagChange}
             label="Filter by Tags"
             renderValue={(selected) => selected.join(', ')}
+            MenuProps={{
+              PaperProps: {
+                style: {
+                  maxHeight: 200,
+                },
+              },
+            }}
           >
             {availableTags.map((tag) => (
-              <MenuItem key={tag.id} value={tag.name}>
+              <MenuItem key={tag.id} value={tag.name} dense>
                 <Checkbox checked={selectedTags.indexOf(tag.name) > -1} />
                 <ListItemText primary={tag.name} />
               </MenuItem>
@@ -173,33 +183,12 @@ function ListOfNotes({ notes, handleNoteSelect }) {
                       }}
                     >
                       {note.ticker_metadata.map((ticker) => (
-                        <Chip
+                        <TickerChip
                           key={ticker.tickerSymbol}
-                          label={`${ticker.tickerSymbol}: ${ticker.tickerPrice || 'N/A'}`}
-                          size="small"
-                          sx={{
-                            fontSize: '0.7rem',
-                            height: '20px',
-                            backgroundColor: 'grey.300',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                          }}
-                        >
-                          <span style={{ color: 'black' }}>{ticker.tickerSymbol}</span>:
-                          <span
-                            style={{
-                              color:
-                                ticker.priceChange === 'up'
-                                  ? 'green'
-                                  : ticker.priceChange === 'down'
-                                    ? 'red'
-                                    : 'black',
-                            }}
-                          >
-                            {ticker.tickerPrice}
-                          </span>
-                        </Chip>
+                          symbol={ticker.tickerSymbol}
+                          price={ticker.tickerPrice}
+                          change={ticker.priceChange}
+                        />
                       ))}
                     </Box>
                   )}

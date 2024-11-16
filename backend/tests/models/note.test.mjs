@@ -1,20 +1,21 @@
-// tests/note.test.js
-const { expect } = require('chai');
-const { Note, User } = require('../models');
+// tests/note.test.mjs
+import { expect } from 'chai';
+import { Note, User } from '../models';
 
 describe('Note Model', () => {
   before(async () => {
     await User.sync({ force: true });
     await Note.sync({ force: true });
+
+    const testUser = await User.create({
+      email: 'testuser@example.com',
+      password: 'securepassword',
+      firstName: 'Test',
+      lastName: 'User',
+    });
   });
 
   it('should create a valid note', async () => {
-    const user = await User.create({
-      username: 'testuser',
-      email: 'testuser@example.com',
-      password: 'securepassword',
-    });
-
     const note = await Note.create({
       content: 'Valid note content',
       summary: 'Valid summary',
@@ -32,7 +33,7 @@ describe('Note Model', () => {
         },
       ],
       date: '2024-11-20',
-      userId: user.id,
+      userId: testUser.id,
       metadata: {},
     });
 

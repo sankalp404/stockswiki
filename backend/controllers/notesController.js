@@ -1,11 +1,15 @@
-// backend/controllers/notesController.js
-import db from '../models/index.js'; 
+// controllers/notesController.js
+import db from '../models/index.js';
 
-const { Note, Ticker } = db;
+const { Note, Tag, Ticker } = db;
 
-export async function createNote(req, res) {
+export const createNote = async (req, res) => {
   try {
-    const { content, summary, ticker_metadata, tagIds, title, userId } = req.body;
+    console.log('req.user:', req.user); // Add this line
+    console.log('userId:', req.user.id);
+
+    const { content, summary, ticker_metadata, tagIds, title } = req.body;
+    const userId = req.user.id; // Extract userId from authenticated user
 
     const newNote = await Note.create({
       content,
@@ -15,7 +19,7 @@ export async function createNote(req, res) {
       userId,
     });
 
-    // Associate tags
+    // Associate tags if provided
     if (Array.isArray(tagIds)) {
       const tags = await Tag.findAll({ where: { id: tagIds } });
       await newNote.setTags(tags);
@@ -26,30 +30,44 @@ export async function createNote(req, res) {
     console.error('Error creating note:', error);
     res.status(500).json({ error: 'Note creation failed.', details: error.message });
   }
-}
+};
 
-export async function getNotes(req, res) {
+export const getNotes = async (req, res) => {
   try {
     const userId = req.user.id; // Extract userId from the authenticated user
 
-    // Fetch notes for the authenticated user
-    const notes = await Note.findAll({ where: { userId } });
+    // Fetch notes for the authenticated user with proper aliases
+    const notes = await Note.findAll({
+      where: { userId },
+      include: [
+        {
+          model: Tag,
+          as: 'tags', // Specify the alias
+          through: { attributes: [] }, // Exclude join table attributes
+        },
+        {
+          model: Ticker,
+          as: 'tickers', // Specify the alias if applicable
+          through: { attributes: [] }, // Exclude join table attributes
+        },
+      ],
+    });
 
     res.json(notes);
   } catch (error) {
     console.error('Error fetching notes:', error);
-    res.status(500).json({ error: 'Failed to fetch notes.' });
+    res.status(500).json({ error: 'Failed to fetch notes.', details: error.message });
   }
-}
+};
 
-export async function updateNote(req, res) {
+export const updateNote = async (req, res) => {
   try {
     const { id } = req.params;
     const { content, summary, ticker_metadata, tagIds } = req.body;
     const userId = req.user.id; // Extracted from authenticated token
 
     // Find the note
-    const note = await Note.findOne({ where: { id, userId }, include: ['Tags'] });
+    const note = await Note.findOne({ where: { id, userId }, include: ['tags'] });
     if (!note) {
       return res.status(404).json({ error: 'Note not found.' });
     }
@@ -72,9 +90,9 @@ export async function updateNote(req, res) {
     console.error('Error updating note:', error);
     res.status(500).json({ error: 'Note update failed.', details: error.message });
   }
-}
+};
 
-export async function deleteNote(req, res) {
+export const deleteNote = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -86,4 +104,4 @@ export async function deleteNote(req, res) {
     console.error('Error deleting note:', error);
     res.status(500).json({ error: 'Note deletion failed.' });
   }
-}
+};

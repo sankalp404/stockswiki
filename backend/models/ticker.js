@@ -16,10 +16,10 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.FLOAT,
       allowNull: true,
     },
-  });
+  }, {});
 
   Ticker.associate = (models) => {
-    Ticker.belongsToMany(models.Note, { through: 'NotesTickers', foreignKey: 'tickerId' });
+    Ticker.belongsToMany(models.Note, { through: 'NotesTickers', foreignKey: 'tickerId', otherKey: 'noteId', as: 'notes' });
   };
 
   return Ticker;

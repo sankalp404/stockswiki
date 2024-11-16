@@ -7,16 +7,14 @@ import noteService from '../services/noteService';
 
 function NotesApp() {
   const [notes, setNotes] = useState([]);
-  const [selectedNote, setSelectedNote] = useState(null);
+  const [selectedNote, setSelectedNote] = useState(null); // Initialize as null
 
   // Define the fetchNotes function
   const fetchNotes = async () => {
     try {
       const fetchedNotes = await noteService.getNotes();
       setNotes(fetchedNotes);
-      if (!selectedNote && fetchedNotes.length > 0) {
-        setSelectedNote(fetchedNotes[0]);
-      }
+      setSelectedNote(null); // Always open a new note after fetching
     } catch (error) {
       console.error('Error fetching notes:', error);
     }

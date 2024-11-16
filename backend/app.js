@@ -2,7 +2,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
-import pkg from 'body-parser';
 import cors from 'cors';
 
 // Import routes
@@ -11,14 +10,12 @@ import notesRoutes from './routes/notes.js';
 import tagsRoutes from './routes/tags.js';
 import llmRoutes from './routes/llm.js';
 
-const { json, urlencoded } = pkg;
-
 const app = express();
 
 // Middleware
 app.use(cors());
-app.use(json());
-app.use(urlencoded({ extended: true }));
+app.use(express.json()); // Built-in body parser
+app.use(express.urlencoded({ extended: true }));
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -34,7 +31,7 @@ app.get('/', (req, res) => {
 // Error Handling Middleware for Undefined Routes
 app.use((req, res, next) => {
     res.status(404).json({ error: 'Route not found.' });
-  });
+});
 
 // Start the server
 const PORT = process.env.PORT || 5001;

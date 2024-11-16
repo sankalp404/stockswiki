@@ -1,23 +1,19 @@
 // models/index.js
-'use strict';
-
-import { readdirSync } from 'fs';
-import { basename as _basename, join } from 'path';
-import Sequelize, { DataTypes } from 'sequelize';
+import fs from 'fs';
+import path from 'path';
 import { fileURLToPath } from 'url';
+import { Sequelize, DataTypes } from 'sequelize';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = join(__filename, '..');
+const __dirname = path.dirname(__filename);
 
-const basename = _basename(__filename);
+const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
-
-import configModule from '../config/config.cjs';
-const config = configModule[env];
-
+const configPath = path.resolve(__dirname, '../config/config.cjs');
+const config = (await import(`file://${configPath}`)).default[env];
 const db = {};
 
 let sequelize;
@@ -27,21 +23,24 @@ if (config.use_env_variable) {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
-const modelFiles = readdirSync(__dirname)
-  .filter((file) => {
+const files = fs
+  .readdirSync(__dirname)
+  .filter(file => {
     return (
       file.indexOf('.') !== 0 &&
       file !== basename &&
-      file.slice(-3) === '.js'
+      (file.slice(-3) === '.js' || file.slice(-3) === '.mjs')
     );
   });
 
-for (const file of modelFiles) {
-  const model = (await import(join(__dirname, file))).default(sequelize, DataTypes);
+for (const file of files) {
+  const modelPath = path.join(__dirname, file);
+  const modelModule = await import(`file://${modelPath}`);
+  const model = modelModule.default(sequelize, DataTypes);
   db[model.name] = model;
 }
 
-Object.keys(db).forEach((modelName) => {
+Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
   }

@@ -66,7 +66,7 @@ export default (sequelize, DataTypes) => {
 
   User.associate = (models) => {
     User.hasMany(models.Note, { foreignKey: 'userId', onDelete: 'CASCADE' });
-    User.belongsToMany(models.Tag, { through: 'NotesTags', foreignKey: 'userId' });
+    // User.belongsToMany(models.Tag, { through: 'NotesTags', foreignKey: 'userId' });
     User.belongsToMany(models.Ticker, { through: 'NotesTickers', foreignKey: 'userId' });
   };
 

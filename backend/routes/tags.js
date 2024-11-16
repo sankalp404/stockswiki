@@ -1,7 +1,8 @@
 // routes/tags.js
 import { Router } from 'express';
-const router = Router();
 import { createTag, getTags, updateTag, deleteTag } from '../controllers/tagsController.js'; // Ensure the file extension is included
+
+const router = Router();
 
 // Create a new tag
 router.post('/', createTag);

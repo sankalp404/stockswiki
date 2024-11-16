@@ -59,9 +59,40 @@ const deleteNote = async (id) => {
   }
 };
 
+// Get Tags
+const getTags = async () => {
+  const token = authService.getToken();
+  try {
+    const response = await axios.get('http://localhost:5001/api/tags', { // Replace with your actual Tags API endpoint
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching tags:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// Create a new tag
+const createTag = async (tagData) => {
+  const token = authService.getToken();
+  try {
+    const response = await axios.post('http://localhost:5001/api/tags', tagData, {
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating tag:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// Export all functions
 export default {
   getNotes,
   createNote,
   updateNote,
   deleteNote,
+  getTags,
+  createTag, 
 };

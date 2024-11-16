@@ -1,7 +1,8 @@
-const { expect } = require('chai');
-const { sequelize, dataTypes, checkModelName, checkPropertyExists } = require('sequelize-test-helpers');
-const sinon = require('sinon');
-const UserModel = require('../../models/user');
+import { describe, it, before } from 'mocha';
+import { expect } from 'chai';
+import { sequelize, dataTypes, checkModelName, checkPropertyExists } from 'sequelize-test-helpers';
+import sinon from 'sinon';
+import UserModel from '../../models/user.js';
 
 describe('User Model', () => {
   const User = UserModel(sequelize, dataTypes);

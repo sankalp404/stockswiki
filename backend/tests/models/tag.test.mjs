@@ -1,6 +1,6 @@
-const { expect } = require('chai');
-const { sequelize, dataTypes, checkModelName, checkPropertyExists } = require('sequelize-test-helpers');
-const TagModel = require('../../models/tag');
+import { expect } from 'chai';
+import { sequelize, dataTypes, checkModelName, checkPropertyExists } from 'sequelize-test-helpers';
+import TagModel from '../../models/tag';
 
 describe('Tag Model', () => {
   const Tag = TagModel(sequelize, dataTypes);

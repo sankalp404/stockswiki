@@ -28,13 +28,14 @@ import noteService from '../services/noteService';
 import authService from '../services/authService';
 import axios from 'axios';
 import TagIcon from '@mui/icons-material/Tag';
+import TickerChip from './TickerChip';
 
-const TICKER_REGEX = /\b[A-Z0-9]{1,5}\b/g;
+const TICKER_REGEX = /\$[A-Z]\b|\b[A-Z]{2,5}\b/g;
 
 function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
   const { id: userId } = authService.getCurrentUser();
   const [title, setTitle] = useState('');
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(true); // Start in edit mode
   const [content, setContent] = useState('');
   const [tickers, setTickers] = useState([]);
   const [tickerPrices, setTickerPrices] = useState({});
@@ -81,7 +82,7 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
       setTickerPrices(prices);
       setSelectedTags(selectedNote.tags ? selectedNote.tags.map(tag => tag.id) : []);
       setSummary(selectedNote.summary || '');
-      setIsEditingTitle(false);
+      setIsEditingTitle(!!selectedNote.title); // Edit mode if title exists
     } else {
       setTitle('');
       setContent('');
@@ -89,7 +90,7 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
       setTickerPrices({});
       setSelectedTags([]);
       setSummary('');
-      setIsEditingTitle(true); // Enable title input for new notes
+      setIsEditingTitle(true); // New note starts in edit mode
     }
   }, [selectedNote]);
 
@@ -107,7 +108,7 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
           try {
             const response = await axios.get('https://finnhub.io/api/v1/quote', {
               params: {
-                symbol: ticker,
+                symbol: ticker.replace('$', ''), // Remove $ sign for API request
                 token: apiKey,
               },
             });
@@ -168,7 +169,6 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
       finalSummary = 'This is an auto-generated summary.';
       // TODO: Integrate actual summary generation logic
     }
-
     // Prepare ticker metadata
     const tickerMetadata = tickers.map(ticker => ({
       tickerSymbol: ticker,
@@ -176,7 +176,6 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
       priceChange: tickerPrices[ticker]?.change || 'unchanged',
       currency: tickerPrices[ticker]?.currency || 'USD',
     }));
-
     // Prepare note data with tag IDs
     const updatedNote = {
       id: selectedNote ? selectedNote.id : undefined,
@@ -184,10 +183,8 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
       summary: finalSummary,
       title,
       ticker_metadata: tickerMetadata,
-      userId: userId,
       tagIds: selectedTags,
     };
-
     try {
       if (selectedNote) {
         await noteService.updateNote(selectedNote.id, updatedNote);
@@ -205,6 +202,15 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
         });
       }
       fetchNotes();
+      // Reset states for a new note
+      setSelectedNote(null);
+      setTitle('');
+      setContent('');
+      setTickers([]);
+      setTickerPrices({});
+      setSelectedTags([]);
+      setSummary('');
+      setIsEditingTitle(true); // Start in edit mode for the new note
     } catch (error) {
       console.error('Error saving note:', error);
       setSnackbar({
@@ -219,6 +225,47 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
     setSelectedTags(value);
   };
 
+  const handleTagChange = async (event, newValue) => {
+    try {
+      const tagNames = newValue;
+      const existingTags = availableTags.filter(tag => tagNames.includes(tag.name));
+      const newTagNames = tagNames.filter(name => !existingTags.some(tag => tag.name === name));
+      // Create new tags on the server
+      for (const name of newTagNames) {
+        try {
+          const newTag = await noteService.createTag({ name });
+          setAvailableTags(prev => [...prev, newTag]); // Assuming the API returns the new tag directly
+          existingTags.push(newTag);
+          setSnackbar({
+            open: true,
+            message: `Tag "${name}" created successfully.`,
+            severity: 'success',
+          });
+        } catch (error) {
+          if (error.response && error.response.status === 200) { // Adjust based on your API response
+            existingTags.push(error.response.data.tag);
+            setSnackbar({
+              open: true,
+              message: `Tag "${name}" already exists.`,
+              severity: 'info',
+            });
+          } else {
+            console.error('Error creating tag:', error);
+            setSnackbar({
+              open: true,
+              message: `Failed to create tag "${name}".`,
+              severity: 'error',
+            });
+          }
+        }
+      }
+      // Update selected tags with their IDs
+      setSelectedTags(existingTags.map(tag => tag.id));
+    } catch (error) {
+      console.error('Error handling tag change:', error);
+    }
+  };
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'background.paper' }}>
       {/* Header with Title and Action Buttons */}
@@ -228,7 +275,12 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
             <TextField
               value={title}
               onChange={e => setTitle(e.target.value)}
-              onBlur={() => setIsEditingTitle(false)}
+              onBlur={() => {
+                if (title.trim() === '') {
+                  setTitle('Untitled');
+                  setIsEditingTitle(false);
+                }
+              }}
               autoFocus
               variant="outlined"
               size="small"
@@ -260,43 +312,6 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
         </Box>
       </Box>
 
-      {/* Tag Selector */}
-      <Box sx={{ paddingX: 2, paddingBottom: 2 }}>
-        <Autocomplete
-          multiple
-          id="tags-outlined"
-          options={availableTags.map((option) => option.name)}
-          getOptionLabel={(option) => option}
-          value={availableTags.filter(tag => selectedTags.includes(tag.id)).map(tag => tag.name)}
-          onChange={(event, newValue) => {
-            const selectedTagIds = newValue.map(tagName => {
-              const tag = availableTags.find(t => t.name === tagName);
-              return tag ? tag.id : null;
-            }).filter(id => id !== null);
-            setSelectedTags(selectedTagIds);
-          }}
-          filterSelectedOptions
-          freeSolo
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              variant="outlined"
-              label="Tags"
-              placeholder="Select or create tags"
-              InputProps={{
-                ...params.InputProps,
-                startAdornment: (
-                  <>
-                    <TagIcon sx={{ marginRight: 1, color: 'action.active' }} />
-                    {params.InputProps.startAdornment}
-                  </>
-                ),
-              }}
-            />
-          )}
-        />
-      </Box>
-
       {/* Markdown Editor */}
       <Box sx={{ flexGrow: 1, marginBottom: 1, paddingX: 2 }}>
         <MDEditor
@@ -311,40 +326,61 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
         />
       </Box>
 
-      {/* Display Tags Below Editor */}
-      {selectedNote && selectedTags.length > 0 && (
-        <Box sx={{ paddingX: 2, paddingBottom: 2 }}>
-          {availableTags
-            .filter(tag => selectedTags.includes(tag.id))
-            .map((tag) => (
-              <Chip key={tag.id} label={`#${tag.name}`} size="small" sx={{ marginRight: 0.5 }} />
+      {/* Tickers and Tag Selector Section */}
+      <Box
+        sx={{
+          paddingX: 2,
+          paddingBottom: 2,
+          display: 'flex',
+          flexDirection: 'column', // Change to column layout
+          alignItems: 'flex-start', // Align items to the left
+          gap: 2, // Add spacing between elements
+        }}
+      >
+        {/* Tickers on the left */}
+        {tickers.length > 0 && (
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', width: '80%' }}>
+            {tickers.map(ticker => (
+              <TickerChip
+                key={ticker}
+                symbol={ticker}
+                price={tickerPrices[ticker]?.price}
+                change={tickerPrices[ticker]?.change}
+              />
             ))}
-        </Box>
-      )}
+          </Box>
+        )}
 
-      {/* Tickers Section */}
-      {tickers.length > 0 && (
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', marginY: 2, paddingX: 2 }}>
-          {tickers.map(ticker => (
-            <Chip
-              key={ticker}
-              label={`${ticker}: ${tickerPrices[ticker]?.price || 'N/A'}`}
-              size="small"
-              sx={{
-                fontSize: '0.75rem',
-                height: '24px',
-                backgroundColor: 'grey.300',
-                color:
-                  tickerPrices[ticker]?.change === 'up'
-                    ? 'green'
-                    : tickerPrices[ticker]?.change === 'down'
-                      ? 'red'
-                      : 'black',
+        {/* Tag Selector aligned left with 80% width and smaller font */}
+        <Autocomplete
+          multiple
+          id="tags-outlined"
+          options={availableTags.map((option) => option.name)}
+          getOptionLabel={(option) => option}
+          value={selectedTags.map(tagId => {
+            const tag = availableTags.find(t => t.id === tagId);
+            return tag ? tag.name : '';
+          })}
+          onChange={handleTagChange}
+          filterSelectedOptions
+          freeSolo
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant="outlined"
+              label="Tags"
+              placeholder="Select or create tags"
+              InputLabelProps={{ style: { fontSize: '0.8rem' } }}
+              InputProps={{
+                ...params.InputProps,
+                style: { fontSize: '0.75rem' },
               }}
             />
-          ))}
-        </Box>
-      )}
+          )}
+          sx={{ width: '80%' }}
+        />
+      </Box>
+
       {/* Summary Box */}
       <Box sx={{ margin: 2, backgroundColor: 'summary.main', padding: 2, borderRadius: 1, boxShadow: 1 }}>
         <Typography variant="h6" sx={{ marginBottom: 1, color: 'text.primary' }}>
@@ -366,6 +402,7 @@ function NoteEditor({ selectedNote, setSelectedNote, fetchNotes }) {
           </Typography>
         )}
       </Box>
+
       {/* Snackbar for Notifications */}
       <Snackbar
         open={snackbar.open}
